@@ -48,7 +48,6 @@
 <div class="wrap">
   <h1>Febri 記事アーカイブ索引</h1>
   <p class="lead">アニメ情報サイト Febri（febri.jp、2026年11月25日閉鎖）の記事を、インターネットアーカイブの保存ページへのリンクとあわせてまとめた索引です。<span id="gen"></span></p>
-  <p class="lead">連載「ガールズ＆パンツァー 最終章 エンサイクロペディア」の用語ページは <a href="gppedia.html">用語一覧</a> にまとめています。</p>
 
   <div class="bar">
     <input type="search" id="q" placeholder="タイトル・著者名から検索（スペース区切りで AND）" autofocus>
@@ -86,7 +85,7 @@
 
   // 分類ごとの色相（約45°間隔）。未知の分類は名前から色相を決める
   const HUES = { 'TOPICS':25, 'Febri TALK':250, 'SERIES':150, 'Febri TV':300,
-                 'ガルパン用語辞典':70, 'カタリベ':200, 'カバーアート':345 };
+                 'カタリベ':200, 'カバーアート':345 };
   const hue = c => {
     if (c in HUES) return HUES[c];
     let h = 0; for (const ch of c) h = (h * 31 + ch.codePointAt(0)) % 360;
