@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ガールズ＆パンツァー 最終章 エンサイクロペディア 用語一覧｜Febri 記事アーカイブ索引</title>
+<style>
+  :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; --h:70; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e8e8e8; --muted:#9a9a9a; --line:#333; --accent:#ff6b72; --bg:#141414; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; line-height:1.6; }
+  .wrap { max-width:860px; margin:0 auto; padding:32px 20px 64px; }
+  .back { font-size:13px; color:var(--muted); text-decoration:none; }
+  .back:hover { color:var(--accent); }
+  h1 { font-size:20px; margin:8px 0 4px; }
+  .lead { color:var(--muted); font-size:13px; margin:0 0 20px; }
+  .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  input[type=search] { flex:1 1 260px; font-size:16px; padding:10px 12px;
+         border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); }
+  .tabs { display:flex; gap:6px; flex-wrap:wrap; }
+  .tabs button { font-size:13px; padding:6px 14px; border-radius:999px; cursor:pointer;
+         border:1px solid var(--line); background:var(--bg); color:var(--fg); }
+  .tabs button.on { color:oklch(0.46 0.12 var(--h)); background:oklch(0.955 0.03 var(--h));
+         border-color:oklch(0.88 0.05 var(--h)); font-weight:600; }
+  @media (prefers-color-scheme: dark) {
+    .tabs button.on { color:oklch(0.86 0.09 var(--h)); background:oklch(0.30 0.05 var(--h));
+           border-color:oklch(0.40 0.07 var(--h)); }
+  }
+  .index { display:flex; gap:4px; flex-wrap:wrap; margin:16px 0 0; }
+  .index a { font-size:13px; padding:2px 9px; border-radius:4px; text-decoration:none;
+         color:var(--fg); border:1px solid var(--line); }
+  .index a:hover { border-color:var(--accent); color:var(--accent); }
+  .count { margin:16px 0 0; font-size:13px; color:var(--muted); }
+  h2 { font-size:15px; margin:28px 0 6px; padding-bottom:4px; border-bottom:2px solid oklch(0.88 0.05 var(--h)); }
+  ul { list-style:none; padding:0; margin:0; columns:2 260px; column-gap:32px; }
+  li { break-inside:avoid; padding:4px 0; font-size:15px; }
+  li a { color:var(--fg); text-decoration:none; }
+  li a:hover { color:var(--accent); text-decoration:underline; }
+  .ep { font-size:11px; color:var(--muted); margin-left:6px; white-space:nowrap; }
+  .nosave { font-size:11px; color:var(--accent); margin-left:6px; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← 記事検索にもどる</a>
+  <h1>ガールズ＆パンツァー 最終章 エンサイクロペディア 用語一覧</h1>
+  <p class="lead">Febri の連載「ガールズ＆パンツァー 最終章 エンサイクロペディア」の用語ページを、インターネットアーカイブの保存ページへのリンクとあわせて五十音順にまとめました。</p>
+
+  <div class="bar">
+    <input type="search" id="q" placeholder="用語を絞り込む">
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <nav class="index" id="index"></nav>
+  <p class="count" id="count"></p>
+  <div id="list"></div>
+</div>
+
+<script src="gppedia.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const data = window.GPPEDIA_DATA || [];
+  const ORDER = ['あ','か','さ','た','な','は','ま','や','ら・わ','英数'];
+  const order = k => { const i = ORDER.indexOf(k); return i < 0 ? 99 : i; };
+  const norm = s => s.normalize('NFKC').toLowerCase();
+  const esc = s => s.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const coll = new Intl.Collator('ja');
+  data.forEach(x => { x._t = norm(x.t); });
+
+  const eps = [...new Set(data.map(x => x.ep).filter(Boolean))].sort(coll.compare);
+  let ep = '';
+  ['すべて', ...eps].forEach((label, i) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.className = i === 0 ? 'on' : '';
+    b.onclick = () => {
+      ep = i === 0 ? '' : label;
+      [...$('tabs').children].forEach(c => c.classList.toggle('on', c === b));
+      render();
+    };
+    $('tabs').appendChild(b);
+  });
+
+  function render() {
+    const terms = norm($('q').value).split(/\s+/).filter(Boolean);
+    const rows = data.filter(x => (!ep || x.ep === ep) && terms.every(t => x._t.includes(t)));
+    const groups = {};
+    rows.forEach(x => (groups[x.k || 'その他'] ||= []).push(x));
+    const keys = Object.keys(groups).sort((a, b) => order(a) - order(b));
+    $('count').textContent = `${rows.length} 語 / 全 ${data.length} 語`;
+    $('index').innerHTML = keys.map(k => `<a href="#k-${encodeURIComponent(k)}">${esc(k)}</a>`).join('');
+    $('list').innerHTML = keys.map(k => {
+      const items = groups[k].sort((a, b) => coll.compare(a.t, b.t)).map(x => {
+        const href = x.a || ('https://web.archive.org/web/*/' + x.u);
+        const flag = x.a ? '' : '<span class="nosave">未保存</span>';
+        const epTag = ep ? '' : `<span class="ep">${esc(x.ep)}</span>`;
+        return `<li><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a>${epTag}${flag}</li>`;
+      }).join('');
+      return `<h2 id="k-${encodeURIComponent(k)}">${esc(k)}</h2><ul>${items}</ul>`;
+    }).join('');
+  }
+
+  let timer;
+  $('q').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(render, 150); });
+  render();
+})();
+</script>
+</body>
+</html>
