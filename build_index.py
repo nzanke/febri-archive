@@ -415,6 +415,9 @@ def writer_of(d):
     return d.get("author_meta", "") if d.get("author_meta", "").lower() not in ("", "admin", "febri") else ""
 
 
+EXTRA_GROUPS = {"coverart": "カバーアート", "tv": "Febri TV", "febritv": "Febri TV"}
+
+
 def series_names(data):
     """連載の目次ページ（/series/<連載>/）のタイトルを連載名として集める"""
     names = {}
@@ -432,13 +435,16 @@ def write_series(items, names):
         segs = [s for s in urlparse(x["u"]).path.split("/") if s]
         if len(segs) == 3 and segs[0] == "series":
             groups.setdefault(segs[1], []).append(x)
+        elif segs and segs[0] in EXTRA_GROUPS:  # カバーアート・Febri TV も連載一覧にまとめる
+            groups.setdefault(segs[0], []).append(x)
         else:
             rest.append(x)
     out = []
     for slug, xs in groups.items():
         xs.sort(key=lambda x: (x["d"] or "9999", x["u"]))
-        out.append({"s": slug, "n": names.get(slug, slug), "items": xs})
-    out.sort(key=lambda g: min((x["d"] for x in g["items"] if x["d"]), default="9999"))
+        out.append({"s": slug, "n": names.get(slug) or EXTRA_GROUPS.get(slug, slug), "items": xs})
+    # 連載を先に、カバーアート・Febri TV をあとに。それぞれ始まった順
+    out.sort(key=lambda g: (g["s"] in EXTRA_GROUPS, min((x["d"] for x in g["items"] if x["d"]), default="9999")))
     SERIES_JS.write_text("window.SERIES_DATA = " + json.dumps(out, ensure_ascii=False, separators=(",", ":")) + ";\n",
                          encoding="utf-8")
     print(f"series.js を書き出しました: 連載 {len(out)} 本、{sum(len(g['items']) for g in out)} 回")
