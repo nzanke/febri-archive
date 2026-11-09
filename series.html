@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>連載一覧｜Febri 記事アーカイブ索引</title>
+<style>
+  :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e8e8e8; --muted:#9a9a9a; --line:#333; --accent:#ff6b72; --bg:#141414; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; line-height:1.6; }
+  .wrap { max-width:860px; margin:0 auto; padding:32px 20px 64px; }
+  .back { font-size:13px; color:var(--muted); text-decoration:none; }
+  .back:hover { color:var(--accent); }
+  h1 { font-size:22px; margin:8px 0 4px; }
+  .lead { color:var(--muted); font-size:13px; margin:0 0 12px; }
+  .toc { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 8px; }
+  .toc a { --h:150; font-size:13px; font-weight:600; padding:3px 12px; border-radius:999px; text-decoration:none;
+         color:oklch(0.46 0.12 var(--h)); background:oklch(0.955 0.03 var(--h));
+         box-shadow:inset 0 0 0 1px oklch(0.88 0.05 var(--h)); }
+  section { margin-top:32px; }
+  h2 { --h:150; font-size:17px; margin:0 0 4px; padding-bottom:6px;
+       border-bottom:2px solid oklch(0.85 0.07 var(--h)); }
+  h2 .n { font-size:12px; font-weight:400; color:var(--muted); margin-left:8px; }
+  @media (prefers-color-scheme: dark) {
+    .toc a { color:oklch(0.86 0.09 var(--h)); background:oklch(0.30 0.05 var(--h));
+             box-shadow:inset 0 0 0 1px oklch(0.40 0.07 var(--h)); }
+    h2 { border-color:oklch(0.45 0.08 var(--h)); }
+  }
+  ol { list-style:none; padding:0; margin:0; }
+  li { display:flex; gap:16px; padding:9px 0; border-bottom:1px solid var(--line); align-items:baseline; }
+  .date { flex:0 0 88px; font-variant-numeric:tabular-nums; color:var(--muted); font-size:14px; }
+  .title { flex:1; }
+  .title a { color:var(--fg); text-decoration:none; }
+  .title a:hover { color:var(--accent); text-decoration:underline; }
+  .writer { font-size:12px; color:var(--muted); margin-left:8px; white-space:nowrap; }
+  .nosave { font-size:11px; color:var(--accent); margin-left:6px; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← 記事検索にもどる</a>
+  <h1>連載一覧</h1>
+  <p class="lead">Febri の連載（SERIES）を、連載ごとに古い順で並べています。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
+  <nav class="toc" id="toc"></nav>
+  <div id="list"></div>
+</div>
+
+<script src="series.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const groups = window.SERIES_DATA || [];
+  const esc = s => s.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const fmt = d => d ? d.replace(/-/g, '.') : '----.--.--';
+  const HUES = [150, 25, 250, 300, 70, 200];
+
+  $('toc').innerHTML = groups.map((g, i) =>
+    `<a href="#${esc(g.s)}" style="--h:${HUES[i % HUES.length]}">${esc(g.n)}</a>`).join('');
+
+  $('list').innerHTML = groups.map((g, i) => {
+    const rows = g.items.map(x => {
+      const href = x.a || ('https://web.archive.org/web/*/' + x.u);
+      const flag = x.a ? '' : '<span class="nosave">未保存</span>';
+      const w = x.w ? `<span class="writer">文／${esc(x.w)}</span>` : '';
+      return `<li><span class="date">${fmt(x.d)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a>${w}${flag}</span></li>`;
+    }).join('');
+    return `<section id="${esc(g.s)}"><h2 style="--h:${HUES[i % HUES.length]}">${esc(g.n)}<span class="n">${g.items.length} 回</span></h2><ol>${rows}</ol></section>`;
+  }).join('');
+})();
+</script>
+</body>
+</html>
