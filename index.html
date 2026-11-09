@@ -14,6 +14,11 @@
          font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; line-height:1.6; }
   .wrap { max-width:860px; margin:0 auto; padding:32px 20px 64px; }
   h1 { font-size:22px; margin:0 0 4px; }
+  .nav { display:flex; gap:4px; margin:0 0 16px; border-bottom:1px solid var(--line); }
+  .nav a { font-size:14px; padding:8px 14px; color:var(--muted); text-decoration:none;
+           border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .nav a:hover { color:var(--fg); }
+  .nav a.on { color:var(--fg); font-weight:600; border-color:var(--accent); }
   .lead { color:var(--muted); font-size:13px; margin:0 0 20px; }
   .bar { display:flex; gap:8px; flex-wrap:wrap; }
   input[type=search] { flex:1 1 320px; font-size:16px; padding:10px 12px;
@@ -46,9 +51,9 @@
 </head>
 <body>
 <div class="wrap">
+  <nav class="nav"><a href="index.html" class="on">記事検索</a><a href="series.html">連載一覧</a></nav>
   <h1>Febri 記事アーカイブ索引</h1>
   <p class="lead">アニメ情報サイト Febri（febri.jp、2026年11月25日閉鎖）の記事を、インターネットアーカイブの保存ページへのリンクとあわせてまとめた索引です。<span id="gen"></span></p>
-  <p class="lead">連載（舞台百景、マンガクリエイターインタビューズなど）は <a href="series.html">連載一覧</a> にまとめています。</p>
 
   <div class="bar">
     <input type="search" id="q" placeholder="タイトル・著者名から検索（スペース区切りで AND）" autofocus>

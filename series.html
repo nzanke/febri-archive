@@ -16,6 +16,11 @@
   .back { font-size:13px; color:var(--muted); text-decoration:none; }
   .back:hover { color:var(--accent); }
   h1 { font-size:22px; margin:8px 0 4px; }
+  .nav { display:flex; gap:4px; margin:0 0 16px; border-bottom:1px solid var(--line); }
+  .nav a { font-size:14px; padding:8px 14px; color:var(--muted); text-decoration:none;
+           border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .nav a:hover { color:var(--fg); }
+  .nav a.on { color:var(--fg); font-weight:600; border-color:var(--accent); }
   .lead { color:var(--muted); font-size:13px; margin:0 0 12px; }
   .toc { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 8px; }
   .toc a { --h:150; font-size:13px; font-weight:600; padding:3px 12px; border-radius:999px; text-decoration:none;
@@ -42,7 +47,7 @@
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="index.html">← 記事検索にもどる</a>
+  <nav class="nav"><a href="index.html">記事検索</a><a href="series.html" class="on">連載一覧</a></nav>
   <h1>連載一覧</h1>
   <p class="lead">Febri の連載（SERIES）を、連載ごとに古い順で並べています。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
   <nav class="toc" id="toc"></nav>
