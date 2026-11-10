@@ -416,6 +416,17 @@ def writer_of(d):
 
 
 EXTRA_GROUPS = {"coverart": "カバーアート", "tv": "Febri TV", "febritv": "Febri TV"}
+# ライターのコラム。タイトルで連載を見分け、連載名のない署名コラムは「そのほかのコラム」にまとめる
+COLUMNS = [
+    ("Febri RECOMMEND", r"^Febri ?RECOMMEND"),
+    ("伊達さゆりの「手さぐりの旅」", r"手さぐりの旅"),
+    ("ペイトン尚未の「並行多元ヒロインズ」", r"並行多元ヒロインズ"),
+    ("社会人オタク教養学", r"^社会人オタク教養学"),
+    ("孤独を感じたときに読むマンガ", r"^孤独を感じたときに読むマンガ"),
+    ("『すずめの戸締まり』を見る前に新海誠の世界を振り返る", r"新海誠の世界を振り返る"),
+    ("聖地巡礼のススメ", r"^聖地巡礼のススメ"),
+]
+OTHER_COLUMNS = "そのほかのコラム"
 
 
 def series_names(data):
@@ -437,14 +448,26 @@ def write_series(items, names):
             groups.setdefault(segs[1], []).append(x)
         elif segs and segs[0] in EXTRA_GROUPS:  # カバーアート・Febri TV も連載一覧にまとめる
             groups.setdefault(segs[0], []).append(x)
+        elif any(re.search(rx, x["t"]) for _, rx in COLUMNS):
+            name = next(n for n, rx in COLUMNS if re.search(rx, x["t"]))
+            groups.setdefault("col:" + name, []).append(x)
+        elif x.get("w"):  # 著者名が出る記事＝インタビュー以外の署名記事
+            groups.setdefault("col:" + OTHER_COLUMNS, []).append(x)
         else:
             rest.append(x)
     out = []
     for slug, xs in groups.items():
         xs.sort(key=lambda x: (x["d"] or "9999", x["u"]))
-        out.append({"s": slug, "n": names.get(slug) or EXTRA_GROUPS.get(slug, slug), "items": xs})
+        if slug.startswith("col:"):
+            slug, name = "col" + str(len(out)), slug[4:]
+        else:
+            name = names.get(slug) or EXTRA_GROUPS.get(slug, slug)
+        out.append({"s": slug, "n": name, "items": xs})
     # 連載を先に、カバーアート・Febri TV をあとに。それぞれ始まった順
-    out.sort(key=lambda g: (g["s"] in EXTRA_GROUPS, min((x["d"] for x in g["items"] if x["d"]), default="9999")))
+    # 連載 → コラム → Febri TV・カバーアートの順。それぞれ始まった順（「そのほかのコラム」はコラムの最後）
+    kind = lambda g: 2 if g["s"] in EXTRA_GROUPS else 1 if g["s"].startswith("col") else 0
+    out.sort(key=lambda g: (kind(g), g["n"] == OTHER_COLUMNS,
+                            min((x["d"] for x in g["items"] if x["d"]), default="9999")))
     SERIES_JS.write_text("window.SERIES_DATA = " + json.dumps(out, ensure_ascii=False, separators=(",", ":")) + ";\n",
                          encoding="utf-8")
     print(f"series.js を書き出しました: 連載 {len(out)} 本、{sum(len(g['items']) for g in out)} 回")
