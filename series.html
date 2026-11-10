@@ -27,13 +27,17 @@
          color:oklch(0.46 0.12 var(--h)); background:oklch(0.955 0.03 var(--h));
          box-shadow:inset 0 0 0 1px oklch(0.88 0.05 var(--h)); }
   section { margin-top:32px; }
-  h2 { --h:150; font-size:17px; margin:0 0 4px; padding-bottom:6px;
+  .toc { flex-direction:column; gap:10px; }
+  .toc-site { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .toc-site .site { font-size:12px; color:var(--muted); flex:0 0 84px; }
+  .site-h { font-size:13px; color:var(--muted); margin:44px 0 -16px; letter-spacing:.1em; border:0; }
+  h2.sh { --h:150; font-size:17px; margin:0 0 4px; padding-bottom:6px;
        border-bottom:2px solid oklch(0.85 0.07 var(--h)); }
-  h2 .n { font-size:12px; font-weight:400; color:var(--muted); margin-left:8px; }
+  h2.sh .n { font-size:12px; font-weight:400; color:var(--muted); margin-left:8px; }
   @media (prefers-color-scheme: dark) {
     .toc a { color:oklch(0.86 0.09 var(--h)); background:oklch(0.30 0.05 var(--h));
              box-shadow:inset 0 0 0 1px oklch(0.40 0.07 var(--h)); }
-    h2 { border-color:oklch(0.45 0.08 var(--h)); }
+    h2.sh { border-color:oklch(0.45 0.08 var(--h)); }
   }
   ol { list-style:none; padding:0; margin:0; }
   li { display:flex; gap:16px; padding:9px 0; border-bottom:1px solid var(--line); align-items:baseline; }
@@ -49,31 +53,37 @@
 <div class="wrap">
   <nav class="nav"><a href="index.html">記事検索</a><a href="series.html" class="on">連載一覧</a></nav>
   <h1>連載一覧</h1>
-  <p class="lead">Febri の連載（SERIES）とカバーアート、Febri TV を、それぞれ古い順で並べています。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
+  <p class="lead">Febri の連載（SERIES）・Febri TV・カバーアートと、アキバ総研の連載・コラムを、それぞれ古い順で並べています。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
   <nav class="toc" id="toc"></nav>
   <div id="list"></div>
 </div>
 
-<script src="series.js?v=20261109-2"></script>
+<script src="series.js?v=20261110-1"></script>
+<script src="akiba.js?v=20261110-1"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const groups = window.SERIES_DATA || [];
+  const groups = (window.SERIES_DATA || []).map(g => ({ ...g, site: 'Febri' }))
+    .concat(window.AKIBA_SERIES || []);
+  const sites = [...new Set(groups.map(g => g.site))];
   const esc = s => s.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
   const fmt = d => d ? d.replace(/-/g, '.') : '----.--.--';
   const HUES = [150, 25, 250, 300, 70, 200];
 
-  $('toc').innerHTML = groups.map((g, i) =>
-    `<a href="#${esc(g.s)}" style="--h:${HUES[i % HUES.length]}">${esc(g.n)}</a>`).join('');
+  $('toc').innerHTML = sites.map(site => `<div class="toc-site"><span class="site">${esc(site)}</span>` +
+    groups.map((g, i) => g.site !== site ? '' :
+      `<a href="#${esc(g.s)}" style="--h:${HUES[i % HUES.length]}">${esc(g.n)}</a>`).join('') + '</div>').join('');
 
+  let lastSite = '';
   $('list').innerHTML = groups.map((g, i) => {
+    const head = g.site !== lastSite ? `<h2 class="site-h">${esc(lastSite = g.site)}</h2>` : '';
     const rows = g.items.map(x => {
       const href = x.a || ('https://web.archive.org/web/*/' + x.u);
       const flag = x.a ? '' : '<span class="nosave">未保存</span>';
       const w = x.w ? `<span class="writer">文／${esc(x.w)}</span>` : '';
       return `<li><span class="date">${fmt(x.d)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a>${w}${flag}</span></li>`;
     }).join('');
-    return `<section id="${esc(g.s)}"><h2 style="--h:${HUES[i % HUES.length]}">${esc(g.n)}<span class="n">${g.items.length} 回</span></h2><ol>${rows}</ol></section>`;
+    return head + `<section id="${esc(g.s)}"><h2 class="sh" style="--h:${HUES[i % HUES.length]}">${esc(g.n)}<span class="n">${g.items.length} 回</span></h2><ol>${rows}</ol></section>`;
   }).join('');
 })();
 </script>

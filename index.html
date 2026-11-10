@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Febri 記事アーカイブ索引</title>
+<title>Febri・アキバ総研 記事アーカイブ索引</title>
 <style>
   :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
   @media (prefers-color-scheme: dark) {
@@ -53,8 +53,8 @@
 <body>
 <div class="wrap">
   <nav class="nav"><a href="index.html" class="on">記事検索</a><a href="series.html">連載一覧</a></nav>
-  <h1>Febri 記事アーカイブ索引</h1>
-  <p class="lead">アニメ情報サイト Febri（febri.jp、2026年11月25日閉鎖）の記事を、インターネットアーカイブの保存ページへのリンクとあわせてまとめた索引です。<span id="gen"></span></p>
+  <h1>Febri・アキバ総研 記事アーカイブ索引</h1>
+  <p class="lead">アニメ情報サイト Febri（febri.jp、2026年11月25日閉鎖）と、アキバ総研（akiba-souken.com、2024年10月閉鎖）のスタッフインタビュー・コラムを、インターネットアーカイブの保存ページへのリンクとあわせてまとめた索引です。アキバ総研の記事一覧は <a href="https://github.com/fushihara/akiba-souken-crawler">fushihara さんの収集データ</a>（CC0）によります。<span id="gen"></span></p>
 
   <div class="bar">
     <input type="search" id="q" placeholder="タイトル・著者名から検索（スペース区切りで AND）" autofocus>
@@ -69,12 +69,14 @@
   <button class="more" id="more" hidden>さらに表示</button>
 </div>
 
-<script src="data.js?v=20261109-2"></script>
+<script src="data.js?v=20261110-1"></script>
+<script src="akiba.js?v=20261110-1"></script>
 <script>
 (() => {
   const PAGE = 200;
   const $ = id => document.getElementById(id);
-  const data = window.FEBRI_DATA;
+  const data = (window.FEBRI_DATA || []).concat(window.AKIBA_DATA || [])
+    .sort((a, b) => (b.d || '').localeCompare(a.d || ''));
   if (!Array.isArray(data)) {
     $('count').innerHTML = '<span class="err">data.js が読み込めませんでした。build_index.py を実行して、このページと同じフォルダに data.js を置いてください。</span>';
     return;
@@ -82,6 +84,8 @@
   const norm = s => s.normalize('NFKC').toLowerCase();
   data.forEach(x => { x._t = norm(x.t + ' ' + (x.w || '')); });
 
+  data.forEach(x => { x.site = x.c === 'アキバ総研' ? 'アキバ総研' : 'Febri'; });
+  $('cat').add(new Option('Febri（すべて）', 'site:Febri'));
   const cats = [...new Set(data.map(x => x.c))].sort();
   cats.forEach(c => $('cat').add(new Option(c, c)));
 
@@ -91,7 +95,7 @@
   const fmt = d => d ? d.replace(/-/g, '.') : '----.--.--';
 
   // 分類ごとの色相（約45°間隔）。未知の分類は名前から色相を決める
-  const HUES = { 'TOPICS':25, 'Febri TALK':250, 'SERIES':150, 'Febri TV':300,
+  const HUES = { 'アキバ総研':70, 'TOPICS':25, 'Febri TALK':250, 'SERIES':150, 'Febri TV':300,
                  'カタリベ':200, 'カバーアート':345 };
   const hue = c => {
     if (c in HUES) return HUES[c];
@@ -117,7 +121,7 @@
     const terms = norm($('q').value).split(/\s+/).filter(Boolean);
     const cat = $('cat').value;
     results = data.filter(x =>
-      (!cat || x.c === cat) && terms.every(t => x._t.includes(t))
+      (!cat || x.c === cat || cat === 'site:' + x.site) && terms.every(t => x._t.includes(t))
     );
     if ($('oldFirst').checked) results = results.slice().reverse();
     $('count').textContent = `${results.length.toLocaleString()} 件 / 全 ${data.length.toLocaleString()} 件`;
