@@ -22,6 +22,9 @@ URL = "https://github.com/fushihara/akiba-souken-crawler/releases/download/relea
 SEL = HERE / "akiba_selection.json"
 OUT = HERE / "akiba.js"
 JST = datetime.timezone(datetime.timedelta(hours=9))
+# コラム系の連載は連載一覧にだけ出し、記事検索には入れない（インタビュー系の連載は両方に出す）
+COLUMNS = {"アニメコラム", "中年アニメライターの懐かしアニメ回顧録", "中国オタクのアニメ事情", "犬も歩けばアニメに当たる。",
+           "アニメライターが選ぶ厳選アニメ", "編集部レビュー", "編集部感想"}
 UMBRELLA = "アニメコラム"  # ほかの連載をまとめた大分類。連載一覧ではほかの連載に入らない記事だけを並べる
 
 
@@ -48,9 +51,11 @@ def main():
             "d": datetime.datetime.fromtimestamp(x["timestampMs"] / 1000, JST).strftime("%Y-%m-%d"),
             "c": "アキバ総研",
             "u": f"https://akiba-souken.com/article/{aid}/",
-            "a": f"https://web.archive.org/web/{x['iaUrlKey']}/https://akiba-souken.com/article/{aid}/",
+            # 保存ページはリダイレクトのスクリプトが入っているので、スクリプトを止めた小窓で見る閲覧ページを通す
+            "a": f"viewer.html?id={aid}&t={x['iaUrlKey']}" + (f"&n={x['maxPageNumber']}" if x["maxPageNumber"] > 1 else ""),
         }
-        items.append(item)
+        if not hit or not set(hit) <= COLUMNS or aid in ids:
+            items.append(item)
         named = [t for t in hit if t != UMBRELLA]
         for t in named or hit:
             groups[t].append(item)

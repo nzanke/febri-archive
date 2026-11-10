@@ -26,7 +26,15 @@
   .toc a { --h:150; font-size:13px; font-weight:600; padding:3px 12px; border-radius:999px; text-decoration:none;
          color:oklch(0.46 0.12 var(--h)); background:oklch(0.955 0.03 var(--h));
          box-shadow:inset 0 0 0 1px oklch(0.88 0.05 var(--h)); }
-  section { margin-top:32px; }
+  details { margin-top:14px; }
+  summary { list-style:none; cursor:pointer; }
+  summary::-webkit-details-marker { display:none; }
+  summary h2.sh::before { content:"▸"; display:inline-block; width:1.2em; color:var(--muted); transition:transform .15s; }
+  details[open] summary h2.sh::before { transform:rotate(90deg); }
+  summary:hover h2.sh { color:var(--accent); }
+  .ctl { display:flex; gap:8px; margin:12px 0 0; }
+  .ctl button { font-size:12px; padding:4px 12px; border-radius:6px; cursor:pointer;
+         border:1px solid var(--line); background:var(--bg); color:var(--fg); }
   .toc { flex-direction:column; gap:10px; }
   .toc-site { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .toc-site .site { font-size:12px; color:var(--muted); flex:0 0 84px; }
@@ -53,13 +61,14 @@
 <div class="wrap">
   <nav class="nav"><a href="index.html">記事検索</a><a href="series.html" class="on">連載一覧</a></nav>
   <h1>連載一覧</h1>
-  <p class="lead">Febri の連載（SERIES）・Febri TV・カバーアートと、アキバ総研の連載・コラムを、それぞれ古い順で並べています。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
+  <p class="lead">Febri の連載（SERIES）・Febri TV・カバーアートと、アキバ総研の連載・コラムを、それぞれ古い順で並べています。連載名を押すと開きます。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
   <nav class="toc" id="toc"></nav>
+  <div class="ctl"><button id="openAll">すべて開く</button><button id="closeAll">すべて閉じる</button></div>
   <div id="list"></div>
 </div>
 
 <script src="series.js?v=20261110-1"></script>
-<script src="akiba.js?v=20261110-1"></script>
+<script src="akiba.js?v=20261110-2"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -83,8 +92,19 @@
       const w = x.w ? `<span class="writer">文／${esc(x.w)}</span>` : '';
       return `<li><span class="date">${fmt(x.d)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a>${w}${flag}</span></li>`;
     }).join('');
-    return head + `<section id="${esc(g.s)}"><h2 class="sh" style="--h:${HUES[i % HUES.length]}">${esc(g.n)}<span class="n">${g.items.length} 回</span></h2><ol>${rows}</ol></section>`;
+    return head + `<details id="${esc(g.s)}"><summary><h2 class="sh" style="--h:${HUES[i % HUES.length]}">${esc(g.n)}<span class="n">${g.items.length} 本${g.items[0].d ? '　' + fmt(g.items[0].d) + '〜' : ''}</span></h2></summary><ol>${rows}</ol></details>`;
   }).join('');
+
+  const all = () => [...document.querySelectorAll('#list details')];
+  $('openAll').onclick = () => all().forEach(d => d.open = true);
+  $('closeAll').onclick = () => all().forEach(d => d.open = false);
+  // 目次から飛んだ連載は開いておく
+  const openHash = () => {
+    const d = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (d && d.tagName === 'DETAILS') { d.open = true; d.scrollIntoView(); }
+  };
+  window.addEventListener('hashchange', openHash);
+  openHash();
 })();
 </script>
 </body>

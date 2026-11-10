@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>保存ページの閲覧｜Febri・アキバ総研 記事アーカイブ索引</title>
+<style>
+  :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e8e8e8; --muted:#9a9a9a; --line:#333; --accent:#ff6b72; --bg:#141414; }
+  }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--bg); color:var(--fg); display:flex; flex-direction:column;
+         font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; line-height:1.5; }
+  header { padding:10px 20px; border-bottom:1px solid var(--line); }
+  .top { display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; font-size:13px; }
+  .top a { color:var(--muted); text-decoration:none; }
+  .top a:hover { color:var(--accent); }
+  h1 { font-size:16px; margin:6px 0 4px; }
+  .tools { display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-size:13px; color:var(--muted); }
+  .tools button, .tools select { font-size:13px; padding:4px 10px; border-radius:6px; cursor:pointer;
+         border:1px solid var(--line); background:var(--bg); color:var(--fg); }
+  .tools a { color:var(--muted); }
+  .note { font-size:12px; color:var(--muted); margin-top:4px; }
+  iframe { flex:1; width:100%; border:0; background:#fff; }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <a href="index.html">記事検索</a><a href="series.html">連載一覧</a>
+  </div>
+  <h1 id="title">アキバ総研の記事（保存ページ）</h1>
+  <div class="tools">
+    <span id="when"></span>
+    <span id="pages"></span>
+    <button id="back">1か月前の保存を見る</button>
+    <a id="list" target="_blank" rel="noopener">保存の一覧（インターネットアーカイブ）</a>
+  </div>
+  <div class="note">アキバ総研のページは、ほかのサイトから開くとトップページへ飛ばすスクリプトが入っているため、スクリプトを止めて表示しています。「サービスは終了しました」と出たら「1か月前の保存を見る」を押してください。</div>
+</header>
+<iframe id="frame" sandbox="" referrerpolicy="no-referrer" title="インターネットアーカイブの保存ページ"></iframe>
+
+<script src="akiba.js?v=20261110-2"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const q = new URLSearchParams(location.search);
+  const id = (q.get('id') || '').replace(/\D/g, '');
+  const pages = Math.max(1, parseInt(q.get('n') || '1', 10) || 1);
+  const page = Math.min(pages, Math.max(1, parseInt(q.get('p') || '1', 10) || 1));
+  const LAST = '20241001000000';  // 閉鎖直前。これに一番近い保存へ自動で飛ぶ
+  let t = (q.get('t') || '').match(/^\d{14}$/) ? q.get('t') : LAST;
+  if (!id) { $('title').textContent = '記事が指定されていません'; return; }
+
+  const orig = `https://akiba-souken.com/article/${id}/` + (page > 1 ? `?page=${page}` : '');
+  // 記事名を索引のデータから探す
+  const all = (window.AKIBA_DATA || []).concat(...(window.AKIBA_SERIES || []).map(g => g.items));
+  const hit = all.find(x => x.u === `https://akiba-souken.com/article/${id}/`);
+  if (hit) { $('title').textContent = hit.t; document.title = hit.t + '｜保存ページ'; }
+
+  const fmt = s => `${s.slice(0,4)}.${s.slice(4,6)}.${s.slice(6,8)}`;
+  function show() {
+    $('frame').src = `https://web.archive.org/web/${t}if_/${orig}`;
+    $('when').textContent = `${fmt(t)} ごろの保存`;
+  }
+  $('list').href = `https://web.archive.org/web/*/${orig}`;
+
+  if (pages > 1) {
+    const sel = document.createElement('select');
+    for (let i = 1; i <= pages; i++) sel.add(new Option(`${i} ページ目`, i, false, i === page));
+    sel.onchange = () => {
+      const u = new URL(location.href);
+      u.searchParams.set('p', sel.value);
+      if (sel.value !== '1') u.searchParams.set('t', LAST);  // 2ページ目以降は保存日時がわからないので閉鎖直前を指定
+      location.href = u.toString();
+    };
+    $('pages').appendChild(sel);
+  }
+
+  $('back').onclick = () => {
+    // 年月日時分秒の数字から1か月分を引く（月の繰り下がりを考慮）
+    let y = +t.slice(0,4), m = +t.slice(4,6) - 1;
+    if (m === 0) { m = 12; y -= 1; }
+    t = `${y}${String(m).padStart(2,'0')}${t.slice(6)}`;
+    const u = new URL(location.href); u.searchParams.set('t', t); history.replaceState(null, '', u);
+    show();
+  };
+  show();
+})();
+</script>
+</body>
+</html>

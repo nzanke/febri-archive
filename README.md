@@ -6,6 +6,7 @@
 - `data.js` … 記事一覧（タイトル・日付・分類・著者・アーカイブURL）
 - `series.html` / `series.js` … 連載一覧
 - `akiba.js` … アキバ総研の記事一覧と連載（`build_akiba.py` で作成）
+- `viewer.html` … アキバ総研の保存ページを、リダイレクトのスクリプトを止めて表示する閲覧ページ
 - `build_akiba.py` / `akiba_selection.json` … アキバ総研の記事の選び方（元データは fushihara/akiba-souken-crawler の配布ファイル articles.json、CC0）
 - `build_index.py` … 一覧の作成スクリプト
 
