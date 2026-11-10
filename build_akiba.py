@@ -13,6 +13,7 @@
 """
 import datetime
 import json
+import re
 import urllib.request
 from pathlib import Path
 
@@ -25,7 +26,21 @@ JST = datetime.timezone(datetime.timedelta(hours=9))
 # コラム系の連載は連載一覧にだけ出し、記事検索には入れない（インタビュー系の連載は両方に出す）
 COLUMNS = {"アニメコラム", "中年アニメライターの懐かしアニメ回顧録", "中国オタクのアニメ事情", "犬も歩けばアニメに当たる。",
            "アニメライターが選ぶ厳選アニメ", "編集部レビュー", "編集部感想"}
-UMBRELLA = "アニメコラム"  # ほかの連載をまとめた大分類。連載一覧ではほかの連載に入らない記事だけを並べる
+UMBRELLA = "アニメコラム"
+# 大分類「アニメコラム」の中の連載は、タイトルで見分ける（タグがないため）
+SUBSERIES = [
+    ("ざっくり！平成アニメ史", r"ざっくり！平成アニメ史"),
+    ("キーワードで斬る！見るべきアニメ100", r"キーワードで斬る！見るべきアニメ100"),
+    ("ときめき☆タイムトリップ", r"ときめき☆タイムトリップ"),
+    ("季節を楽しむオススメ作品", r"季節を楽しむオススメ作品"),
+    ("スタッフに注目！ お宝作品発掘", r"スタッフに注目！\s*お宝作品発掘"),
+    ("オタク女子の事情とホンネ", r"オタク女子の事情とホンネ"),
+    ("アニメ10年ひとむかし", r"アニメ10年ひと(むかし|昔)"),
+    ("「バミューダトライアングル」ゆるふわ感想文", r"ゆるふわ感想文"),
+    ("平成後の世界のためのリ・アニメイト", r"平成後の世界のためのリ・アニメイト"),
+    ("モノブライト・出口博之の「いいから黙ってアニソン聴け！」", r"いいから黙ってアニソン聴け"),
+    ("アニメライターが選ぶ厳選アニメ", r"アニメライター(が選ぶ|による).*(アニメ|レビュー)"),  # 同名のタグの連載に合流
+]  # ほかの連載をまとめた大分類。連載一覧ではほかの連載に入らない記事だけを並べる
 
 
 def load_articles():
@@ -57,17 +72,20 @@ def main():
         if not hit or not set(hit) <= COLUMNS or aid in ids:
             items.append(item)
         named = [t for t in hit if t != UMBRELLA]
+        if not named and UMBRELLA in hit:
+            sub = next((n for n, rx in SUBSERIES if re.search(rx, x["title"])), None)
+            named = [sub] if sub else []
         for t in named or hit:
-            groups[t].append(item)
+            groups.setdefault(t, []).append(item)
     items.sort(key=lambda x: (x["d"], x["t"]), reverse=True)
     series = []
     for t, xs in groups.items():
         if not xs:
             continue
         xs.sort(key=lambda x: (x["d"], x["u"]))
-        name = t + "（ほかの連載以外）" if t == UMBRELLA else t
+        name = "そのほかのアニメコラム" if t == UMBRELLA else t
         series.append({"s": "akiba-" + str(len(series)), "n": name, "site": "アキバ総研", "items": xs})
-    series.sort(key=lambda g: g["items"][0]["d"])
+    series.sort(key=lambda g: (g["n"] == "そのほかのアニメコラム", g["items"][0]["d"]))
     OUT.write_text(
         "window.AKIBA_DATA = " + json.dumps(items, ensure_ascii=False, separators=(",", ":")) + ";\n"
         "window.AKIBA_SERIES = " + json.dumps(series, ensure_ascii=False, separators=(",", ":")) + ";\n",
