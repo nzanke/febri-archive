@@ -1,4 +1,4 @@
-"""bonet.info（日本語版、2013〜2016年ごろ）の記事を、保存ページからタイトル・日付を抜き出して tools/bonet/articles.json に書く
+"""bonet.info（日本語版、2013〜2016年ごろ）の記事を、保存ページからタイトル・日付を抜き出して tools/bonet/bonet_articles.json に書く
 （GitHub Actions で実行。cdx.json が前提）"""
 import json, re, time, urllib.request, html as H
 from collections import defaultdict
@@ -82,7 +82,7 @@ for e in cdx:
 print("articles", len(arts), "list pages", len(lists))
 
 # 途中で打ち切られても続きから再開できるように、取れた分を随時書き出す
-OUT = "tools/bonet/articles.json"
+OUT = "tools/bonet/bonet_articles.json"
 try:
     result = {"/".join((r["section"], r["slug"])): r for r in json.load(open(OUT)) if r.get("ts")}
 except FileNotFoundError:
