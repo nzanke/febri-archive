@@ -1,0 +1,22 @@
+name: bonet
+on:
+  workflow_dispatch:
+  push:
+    paths: ["tools/bonet/run.txt"]
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python tools/bonet/$(head -1 tools/bonet/run.txt)
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add tools/bonet
+          git commit -m "bonet: 実行結果" || echo "変更なし"
+          git push
