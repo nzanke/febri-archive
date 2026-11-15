@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Febri・アキバ総研 記事アーカイブ索引</title>
+<title>Febri・アキバ総研・bonet 記事アーカイブ索引</title>
 <style>
   :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
   @media (prefers-color-scheme: dark) {
@@ -53,8 +53,8 @@
 <body>
 <div class="wrap">
   <nav class="nav"><a href="index.html" class="on">記事検索</a><a href="series.html">連載一覧</a></nav>
-  <h1>Febri・アキバ総研 記事アーカイブ索引</h1>
-  <p class="lead">アニメ情報サイト Febri（febri.jp、2026年11月25日閉鎖）と、アキバ総研（akiba-souken.com、2024年10月閉鎖）のスタッフインタビューを、インターネットアーカイブの保存ページへのリンクとあわせてまとめた索引です。アキバ総研の記事一覧は <a href="https://github.com/fushihara/akiba-souken-crawler">fushihara さんの収集データ</a>（CC0）によります。アキバ総研のコラムは<a href="series.html">連載一覧</a>にまとめています。<span id="gen"></span></p>
+  <h1>Febri・アキバ総研・bonet 記事アーカイブ索引</h1>
+  <p class="lead">アニメ情報サイト Febri（febri.jp、2026年11月25日閉鎖）、アキバ総研（akiba-souken.com、2024年10月閉鎖）、bonet（bonet.info、2016年ごろ更新終了）のインタビューを、インターネットアーカイブの保存ページへのリンクとあわせてまとめた索引です。アキバ総研の記事一覧は <a href="https://github.com/fushihara/akiba-souken-crawler">fushihara さんの収集データ</a>（CC0）によります。アキバ総研と bonet のコラムは<a href="series.html">連載一覧</a>にまとめています。bonet の日付に「頃」とあるものは、記事番号から推定した日付です。<span id="gen"></span></p>
 
   <div class="bar">
     <input type="search" id="q" placeholder="タイトル・著者名から検索（スペース区切りで AND）" autofocus>
@@ -71,11 +71,12 @@
 
 <script src="data.js?v=20261110-3"></script>
 <script src="akiba.js?v=20261110-4"></script>
+<script src="bonet.js?v=20261115-1"></script>
 <script>
 (() => {
   const PAGE = 200;
   const $ = id => document.getElementById(id);
-  const data = (window.FEBRI_DATA || []).concat(window.AKIBA_DATA || [])
+  const data = (window.FEBRI_DATA || []).concat(window.AKIBA_DATA || [], window.BONET_DATA || [])
     .sort((a, b) => (b.d || '').localeCompare(a.d || ''));
   if (!Array.isArray(data)) {
     $('count').innerHTML = '<span class="err">data.js が読み込めませんでした。build_index.py を実行して、このページと同じフォルダに data.js を置いてください。</span>';
@@ -84,7 +85,7 @@
   const norm = s => s.normalize('NFKC').toLowerCase();
   data.forEach(x => { x._t = norm(x.t + ' ' + (x.w || '')); });
 
-  data.forEach(x => { x.site = x.c === 'アキバ総研' ? 'アキバ総研' : 'Febri'; });
+  data.forEach(x => { x.site = x.c === 'アキバ総研' ? 'アキバ総研' : x.c === 'bonet' ? 'bonet' : 'Febri'; });
   $('cat').add(new Option('Febri（すべて）', 'site:Febri'));
   const cats = [...new Set(data.map(x => x.c))].sort();
   cats.forEach(c => $('cat').add(new Option(c, c)));
@@ -92,10 +93,10 @@
   let results = [], shown = 0;
 
   const esc = s => s.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-  const fmt = d => d ? d.replace(/-/g, '.') : '----.--.--';
+  const fmt = (d, e) => !d ? '----.--.--' : e ? d.slice(0, 7).replace('-', '.') + '頃' : d.replace(/-/g, '.');
 
   // 分類ごとの色相（約45°間隔）。未知の分類は名前から色相を決める
-  const HUES = { 'アキバ総研':70, 'TOPICS':25, 'Febri TALK':250, 'SERIES':150, 'Febri TV':300,
+  const HUES = { 'アキバ総研':70, 'bonet':190, 'TOPICS':25, 'Febri TALK':250, 'SERIES':150, 'Febri TV':300,
                  'カタリベ':200, 'カバーアート':345 };
   const hue = c => {
     if (c in HUES) return HUES[c];
@@ -106,7 +107,7 @@
   function row(x) {
     const href = x.a || ('https://web.archive.org/web/*/' + x.u);
     const flag = x.a ? '' : '<span class="nosave">未保存</span>';
-    return `<li><span class="date">${fmt(x.d)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a><span class="cat" style="--h:${hue(x.c)}">${esc(x.c)}</span>${x.w ? `<span class="writer">文／${esc(x.w)}</span>` : ''}${flag}</span></li>`;
+    return `<li><span class="date">${fmt(x.d, x.e)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a><span class="cat" style="--h:${hue(x.c)}">${esc(x.c)}</span>${x.w ? `<span class="writer">文／${esc(x.w)}</span>` : ''}${flag}</span></li>`;
   }
 
   function render(more) {

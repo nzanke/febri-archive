@@ -61,7 +61,7 @@
 <div class="wrap">
   <nav class="nav"><a href="index.html">記事検索</a><a href="series.html" class="on">連載一覧</a></nav>
   <h1>連載一覧</h1>
-  <p class="lead">Febri の連載（SERIES）・Febri TV・カバーアートと、アキバ総研の連載・コラムを、それぞれ古い順で並べています。連載名を押すと開きます。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
+  <p class="lead">Febri の連載（SERIES）・Febri TV・カバーアートと、アキバ総研・bonet の連載・コラムを、それぞれ古い順で並べています。連載名を押すと開きます。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
   <nav class="toc" id="toc"></nav>
   <div class="ctl"><button id="openAll">すべて開く</button><button id="closeAll">すべて閉じる</button></div>
   <div id="list"></div>
@@ -69,14 +69,15 @@
 
 <script src="series.js?v=20261110-3"></script>
 <script src="akiba.js?v=20261110-4"></script>
+<script src="bonet.js?v=20261115-1"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
   const groups = (window.SERIES_DATA || []).map(g => ({ ...g, site: 'Febri' }))
-    .concat(window.AKIBA_SERIES || []);
+    .concat(window.AKIBA_SERIES || [], window.BONET_SERIES || []);
   const sites = [...new Set(groups.map(g => g.site))];
   const esc = s => s.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-  const fmt = d => d ? d.replace(/-/g, '.') : '----.--.--';
+  const fmt = (d, e) => !d ? '----.--.--' : e ? d.slice(0, 7).replace('-', '.') + '頃' : d.replace(/-/g, '.');
   const HUES = [150, 25, 250, 300, 70, 200];
 
   $('toc').innerHTML = sites.map(site => `<div class="toc-site"><span class="site">${esc(site)}</span>` +
@@ -90,7 +91,7 @@
       const href = x.a || ('https://web.archive.org/web/*/' + x.u);
       const flag = x.a ? '' : '<span class="nosave">未保存</span>';
       const w = x.w ? `<span class="writer">文／${esc(x.w)}</span>` : '';
-      return `<li><span class="date">${fmt(x.d)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a>${w}${flag}</span></li>`;
+      return `<li><span class="date">${fmt(x.d, x.e)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a>${w}${flag}</span></li>`;
     }).join('');
     return head + `<details id="${esc(g.s)}"><summary><h2 class="sh" style="--h:${HUES[i % HUES.length]}">${esc(g.n)}<span class="n">${g.items.length} 本${g.items[0].d ? '　' + fmt(g.items[0].d) + '〜' : ''}</span></h2></summary><ol>${rows}</ol></details>`;
   }).join('');
