@@ -2,21 +2,24 @@ name: bonet
 on:
   workflow_dispatch:
   push:
-    paths: ["tools/bonet/run.txt"]
+    paths: ["tools/bonet/run.txt", "tools/bonet/run_stamp.txt"]
 permissions:
   contents: write
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: python tools/bonet/$(head -1 tools/bonet/run.txt)
-      - run: |
+      - run: timeout 280m python -u tools/bonet/$(head -1 tools/bonet/run.txt)
+      - if: always()
+        run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
+          ls -la tools/bonet
+          git status --short
           git add tools/bonet
           git commit -m "bonet: 実行結果" || echo "変更なし"
-          git push
+          git push origin HEAD:main

@@ -20,11 +20,11 @@ def key_of(u):
         return None
     return m.group(1), m.group(2)
 
-def fetch(ts, url, tries=3):
+def fetch(ts, url, tries=2):
     for i in range(tries):
         try:
             req = urllib.request.Request(f"https://web.archive.org/web/{ts}id_/{url}", headers=UA)
-            with urllib.request.urlopen(req, timeout=60) as r:
+            with urllib.request.urlopen(req, timeout=30) as r:
                 raw = r.read()
             time.sleep(1)
             for enc in ("utf-8", "cp932", "euc-jp"):
@@ -81,20 +81,39 @@ for e in cdx:
         lists.append(e)
 print("articles", len(arts), "list pages", len(lists))
 
-result = {}
-for i, (k, es) in enumerate(sorted(arts.items()), 1):
+# 途中で打ち切られても続きから再開できるように、取れた分を随時書き出す
+OUT = "tools/bonet/articles.json"
+try:
+    result = {"/".join((r["section"], r["slug"])): r for r in json.load(open(OUT)) if r.get("ts")}
+except FileNotFoundError:
+    result = {}
+def save():
+    json.dump(sorted(result.values(), key=lambda r: (r["section"], r["slug"])), open(OUT, "w"), ensure_ascii=False, indent=0)
+from concurrent.futures import ThreadPoolExecutor
+
+def work(item):
+    k, es = item
     # 閉鎖前（2017年より前）で一番新しい保存を優先し、なければ一番古い保存
     pre = [e for e in es if e["first"] < "2017"]
     e = max(pre, key=lambda e: e["first"]) if pre else min(es, key=lambda e: e["first"])
-    ts = e["first"]
-    doc = fetch(ts, e["url"])
+    doc = fetch(e["first"], e["url"])
     title, date = parse_article(doc) if doc else ("", "")
-    result["/".join(k)] = {"section": k[0], "slug": k[1], "url": e["url"], "ts": ts, "title": title, "date": date}
-    print(f"[{i}/{len(arts)}] {date} {title[:40]}")
+    return "/".join(k), {"section": k[0], "slug": k[1], "url": e["url"], "ts": e["first"], "title": title, "date": date}
+
+todo = [it for it in sorted(arts.items()) if "/".join(it[0]) not in result]
+print("todo", len(todo), flush=True)
+with ThreadPoolExecutor(4) as ex:  # 4本ずつ同時に読む
+    for i, (kk, r) in enumerate(ex.map(work, todo), 1):
+        result[kk] = r
+        print(f"[{i}/{len(todo)}] {r['date']} {r['title'][:40]}", flush=True)
+        if i % 20 == 0:
+            save()
+save()
 
 found_in_lists = {}
-for i, e in enumerate(lists, 1):
-    doc = fetch(e["last"], e["url"])
+with ThreadPoolExecutor(4) as ex:
+    docs = list(ex.map(lambda e: fetch(e["last"], e["url"]), lists))
+for i, (e, doc) in enumerate(zip(lists, docs), 1):
     if doc:
         for k, text in parse_list(doc).items():
             kk = "/".join(k)
@@ -109,5 +128,5 @@ for kk, text in found_in_lists.items():
         sec, slug = kk.split("/", 1)
         result[kk] = {"section": sec, "slug": slug, "url": f"http://bonet.info/{kk}", "ts": "", "title": "", "date": "", "list_title": text}
 
-json.dump(sorted(result.values(), key=lambda r: (r["section"], r["slug"])), open("tools/bonet/articles.json", "w"), ensure_ascii=False, indent=0)
+save()
 print("total", len(result))
