@@ -4,14 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Febri・アキバ総研・bonet 記事アーカイブ索引</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap&text=%21%22%23%24%25%26%27%28%29%2A%2B%2C-.%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D%5E_%60abcdefghijklmnopqrstuvwxyz%7B%7C%7D~">
 <style>
-  :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
+  :root { --sans:"BIZ UDGothic","BIZ UDPGothic","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
   @media (prefers-color-scheme: dark) {
     :root { --fg:#e8e8e8; --muted:#9a9a9a; --line:#333; --accent:#ff6b72; --bg:#141414; }
   }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--fg);
-         font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; line-height:1.6; }
+         font-family:var(--sans); line-height:1.6; }
   .wrap { max-width:860px; margin:0 auto; padding:32px 20px 64px; }
   h1 { font-size:22px; margin:0 0 4px; }
   .nav { display:flex; gap:4px; margin:0 0 16px; border-bottom:1px solid var(--line); }
@@ -50,59 +54,48 @@
   .err { color:var(--accent); }
   .foot { margin:48px 0 0; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); }
   .foot a { color:var(--muted); }
-  .about { margin:-4px 0 18px; font-size:13px; }
-  .about summary { display:inline-flex; align-items:center; gap:6px; cursor:pointer; list-style:none;
-         color:var(--muted); padding:4px 12px; border:1px solid var(--line); border-radius:999px; user-select:none; }
+  .cbar { position:relative; display:flex; align-items:center; gap:12px; margin:20px 0 6px; }
+  .cbar .count { flex:1; margin:0; }
+  .about { margin-left:auto; }
+  .about summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); white-space:nowrap; }
   .about summary::-webkit-details-marker { display:none; }
-  .about summary::before { content:"i"; display:inline-grid; place-items:center; width:15px; height:15px; border-radius:50%;
-         font-size:10px; font-weight:700; font-style:italic; color:var(--bg); background:var(--muted); }
-  .about summary::after { content:"▾"; font-size:10px; transition:transform .2s; }
-  .about[open] summary::after { transform:rotate(180deg); }
-  .about summary:hover { color:var(--fg); border-color:var(--muted); }
-  .about-body { margin-top:10px; padding:14px 18px; border-radius:10px; background:color-mix(in oklch, var(--fg) 4%, var(--bg));
-         color:var(--fg); line-height:1.75; animation:fade .2s ease; }
-  .about-body p { margin:0 0 8px; } .about-body ul { margin:0 0 10px; padding-left:1.2em; }
-  .about-body b { font-weight:600; }
-  .about-body li { display:list-item; padding:1px 0; border:0; gap:0; }
-  @keyframes fade { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+  .about .qi { width:20px; height:20px; border-radius:50%; border:1px solid var(--line); font-size:12px; font-weight:700;
+         display:flex; align-items:center; justify-content:center; }
+  .about[open] .qi, .about summary:hover .qi { color:var(--bg); background:var(--accent); border-color:var(--accent); }
+  .aboutbox { position:absolute; left:0; right:0; top:calc(100% + 8px); z-index:10; background:var(--bg); border:1px solid var(--line);
+         border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.12); padding:12px 14px; font-size:13px; color:var(--muted);
+         max-height:70vh; overflow:auto; line-height:1.7; }
+  .aboutbox .abh { font-weight:700; color:var(--fg); margin:0 0 6px; }
+  .aboutbox h3 { font-size:13px; color:var(--fg); margin:12px 0 2px; }
+  .aboutbox p { margin:0 0 4px; }
+  .aboutbox ul { margin:0 0 4px; padding-left:1.2em; }
+  .aboutbox li { display:list-item; padding:0; border:0; }
+  .aboutbox a { color:var(--fg); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav class="nav"><a href="index.html" class="on">記事検索</a><a href="series.html">連載一覧</a></nav>
   <h1>Febri・アキバ総研・bonet 記事アーカイブ索引</h1>
-  <p class="lead">閉鎖されたアニメ情報サイトのインタビュー記事を、インターネットアーカイブの保存ページで読める索引です。コラムや連載は <a href="series.html">連載一覧</a> からどうぞ。</p>
-  <details class="about">
-    <summary>このサイトについて</summary>
-    <div class="about-body">
-      <p><b>収録しているサイト</b></p>
-      <ul>
-        <li>Febri（febri.jp、2026年11月25日閉鎖）</li>
-        <li>アキバ総研（akiba-souken.com、2024年10月閉鎖）：アニメ分類のスタッフインタビューと連載</li>
-        <li>bonet（bonet.info、2016年ごろ更新終了）：インタビューとコラム</li>
-      </ul>
-      <p><b>記事検索と連載一覧</b>　このページの記事検索には、主にインタビューを収録しています。コラム・連載・カバーアート・Febri TV などは、記事検索には出さず <a href="series.html">連載一覧</a> に連載ごとにまとめています。</p>
-      <p><b>リンク先</b>　タイトルはインターネットアーカイブ（Wayback Machine）の保存ページへのリンクです。アキバ総研の記事は、そのままでは読めないため、スクリプトを止めて表示する閲覧ページを通します。</p>
-      <p><b>日付</b>　bonet の日付に「頃」とあるものは、記事番号から推定した日付です。</p>
-      <p><b>出典</b>　アキバ総研の記事一覧は <a href="https://github.com/fushihara/akiba-souken-crawler">fushihara さんの収集データ</a>（CC0）によります。</p>
-    </div>
-  </details>
 
   <div class="bar">
-    <input type="search" id="q" placeholder="タイトルから検索（スペース区切りで AND）" autofocus>
-    <select id="cat"><option value="">すべてのカテゴリ</option></select>
+    <input type="search" id="q" placeholder="題名で検索" autofocus>
+    <select id="cat"><option value="">すべて</option></select>
   </div>
   <div class="opts">
     <label><input type="checkbox" id="oldFirst"> 古い順</label>
   </div>
 
-  <p class="count" id="count"></p>
+  <div class="cbar"><p class="count" id="count"></p>
+    <details class="about"><summary><span class="qi">?</span>このサイトについて</summary>
+    <div class="aboutbox" id="aboutbox"></div></details></div>
   <ul id="list"></ul>
   <button class="more" id="more" hidden>さらに表示</button>
 
   <footer class="foot">掲載内容の削除のご要望などは、X（<a href="https://x.com/bg75gf" target="_blank" rel="noopener">@bg75gf</a>）までご連絡ください。</footer>
 </div>
 
+<script src="about.js?v=20261117-1" data-page="index"></script>
 <script src="data.js?v=20261110-3"></script>
 <script src="akiba.js?v=20261110-4"></script>
 <script src="bonet.js?v=20261115-1"></script>
@@ -120,7 +113,7 @@
   data.forEach(x => { x._t = norm(x.t + ' ' + (x.w || '')); });
 
   data.forEach(x => { x.site = x.c === 'アキバ総研' ? 'アキバ総研' : x.c === 'bonet' ? 'bonet' : 'Febri'; });
-  $('cat').add(new Option('Febri（すべて）', 'site:Febri'));
+  $('cat').add(new Option('Febri', 'site:Febri'));
   const cats = [...new Set(data.map(x => x.c))].sort();
   cats.forEach(c => $('cat').add(new Option(c, c)));
 

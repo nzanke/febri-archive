@@ -4,15 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>保存ページの閲覧｜Febri・アキバ総研 記事アーカイブ索引</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap&text=%21%22%23%24%25%26%27%28%29%2A%2B%2C-.%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D%5E_%60abcdefghijklmnopqrstuvwxyz%7B%7C%7D~">
 <style>
-  :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
+  :root { --sans:"BIZ UDGothic","BIZ UDPGothic","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
   @media (prefers-color-scheme: dark) {
     :root { --fg:#e8e8e8; --muted:#9a9a9a; --line:#333; --accent:#ff6b72; --bg:#141414; }
   }
   * { box-sizing:border-box; }
   html, body { height:100%; }
   body { margin:0; background:var(--bg); color:var(--fg); display:flex; flex-direction:column;
-         font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; line-height:1.5; }
+         font-family:var(--sans); line-height:1.5; }
   header { padding:10px 20px; border-bottom:1px solid var(--line); }
   .top { display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; font-size:13px; }
   .top a { color:var(--muted); text-decoration:none; }

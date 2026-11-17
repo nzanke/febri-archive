@@ -4,14 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>連載一覧｜Febri 記事アーカイブ索引</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap&text=%21%22%23%24%25%26%27%28%29%2A%2B%2C-.%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D%5E_%60abcdefghijklmnopqrstuvwxyz%7B%7C%7D~">
 <style>
-  :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
+  :root { --sans:"BIZ UDGothic","BIZ UDPGothic","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; --fg:#1a1a1a; --muted:#6b6b6b; --line:#e3e3e3; --accent:#b4232c; --bg:#fff; }
   @media (prefers-color-scheme: dark) {
     :root { --fg:#e8e8e8; --muted:#9a9a9a; --line:#333; --accent:#ff6b72; --bg:#141414; }
   }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--fg);
-         font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; line-height:1.6; }
+         font-family:var(--sans); line-height:1.6; }
   .wrap { max-width:860px; margin:0 auto; padding:32px 20px 64px; }
   .back { font-size:13px; color:var(--muted); text-decoration:none; }
   .back:hover { color:var(--accent); }
@@ -57,13 +61,33 @@
   .nosave { font-size:11px; color:var(--accent); margin-left:6px; white-space:nowrap; }
   .foot { margin:48px 0 0; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); }
   .foot a { color:var(--muted); }
+  .cbar { position:relative; display:flex; align-items:center; gap:12px; margin:20px 0 6px; }
+  .cbar .count { flex:1; margin:0; }
+  .about { margin-left:auto; }
+  .about summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); white-space:nowrap; }
+  .about summary::-webkit-details-marker { display:none; }
+  .about .qi { width:20px; height:20px; border-radius:50%; border:1px solid var(--line); font-size:12px; font-weight:700;
+         display:flex; align-items:center; justify-content:center; }
+  .about[open] .qi, .about summary:hover .qi { color:var(--bg); background:var(--accent); border-color:var(--accent); }
+  .aboutbox { position:absolute; left:0; right:0; top:calc(100% + 8px); z-index:10; background:var(--bg); border:1px solid var(--line);
+         border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.12); padding:12px 14px; font-size:13px; color:var(--muted);
+         max-height:70vh; overflow:auto; line-height:1.7; }
+  .aboutbox .abh { font-weight:700; color:var(--fg); margin:0 0 6px; }
+  .aboutbox h3 { font-size:13px; color:var(--fg); margin:12px 0 2px; }
+  .aboutbox p { margin:0 0 4px; }
+  .aboutbox ul { margin:0 0 4px; padding-left:1.2em; }
+  .aboutbox li { display:list-item; padding:0; border:0; }
+  .aboutbox a { color:var(--fg); }
+  .count { font-size:13px; color:var(--muted); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav class="nav"><a href="index.html">記事検索</a><a href="series.html" class="on">連載一覧</a></nav>
-  <h1>連載一覧</h1>
-  <p class="lead">Febri の連載（SERIES）・Febri TV・カバーアートと、アキバ総研・bonet の連載・コラムを、それぞれ古い順で並べています。連載名を押すと開きます。タイトルはインターネットアーカイブの保存ページへのリンクです。</p>
+  <h1>Febri・アキバ総研・bonet 記事アーカイブ索引</h1>
+  <div class="cbar"><p class="count" id="count"></p>
+    <details class="about"><summary><span class="qi">?</span>このサイトについて</summary>
+    <div class="aboutbox" id="aboutbox"></div></details></div>
   <nav class="toc" id="toc"></nav>
   <div class="ctl"><button id="openAll">すべて開く</button><button id="closeAll">すべて閉じる</button></div>
   <div id="list"></div>
@@ -71,6 +95,7 @@
   <footer class="foot">掲載内容の削除のご要望などは、X（<a href="https://x.com/bg75gf" target="_blank" rel="noopener">@bg75gf</a>）までご連絡ください。</footer>
 </div>
 
+<script src="about.js?v=20261117-1" data-page="series"></script>
 <script src="series.js?v=20261110-3"></script>
 <script src="akiba.js?v=20261110-4"></script>
 <script src="bonet.js?v=20261115-1"></script>
@@ -88,6 +113,7 @@
     groups.map((g, i) => g.site !== site ? '' :
       `<a href="#${esc(g.s)}" style="--h:${HUES[i % HUES.length]}">${esc(g.n)}</a>`).join('') + '</div>').join('');
 
+  $('count').textContent = `連載 ${groups.length} 本 / ${groups.reduce((n, g) => n + g.items.length, 0).toLocaleString()} 件`;
   let lastSite = '';
   $('list').innerHTML = groups.map((g, i) => {
     const head = g.site !== lastSite ? `<h2 class="site-h">${esc(lastSite = g.site)}</h2>` : '';
