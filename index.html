@@ -71,6 +71,11 @@
   .aboutbox ul { margin:0 0 4px; padding-left:1.2em; }
   .aboutbox li { display:list-item; padding:0; border:0; }
   .aboutbox a { color:var(--fg); }
+  .ug { display:block; position:sticky; top:0; background:var(--bg); font-size:13px; font-weight:700; color:var(--fg);
+         padding:14px 0 4px; border-bottom:2px solid var(--fg); z-index:1; gap:0; }
+  .ud { flex:0 0 44px; text-align:right; font-variant-numeric:tabular-nums; font-size:15px; font-weight:700; white-space:nowrap; color:var(--fg); }
+  .ud small { font-size:10px; font-weight:400; color:var(--muted); margin-left:2px; }
+  .ud .dq { font-size:11px; font-weight:400; color:var(--muted); }
 </style>
 </head>
 <body>
@@ -120,7 +125,15 @@
   let results = [], shown = 0;
 
   const esc = s => s.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-  const fmt = (d, e) => !d ? '----.--.--' : e ? d.slice(0, 7).replace('-', '.') + '頃' : d.replace(/-/g, '.');
+  // 日付はアニメ制作決定ニュースと同じ形：月の見出し（画面上端に留める）＋各行は日にちと曜日
+  const WD = '日月火水木金土';
+  const day = (d, e) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || '');
+    if (!m) return '<span class="dq">—</span>';
+    if (e) return '<span class="dq">頃</span>';  // 記事番号から推定した日付は日にちを出さない
+    return +m[3] + '<small>' + WD[new Date(+m[1], +m[2] - 1, +m[3]).getDay()] + '</small>';
+  };
+  const group = d => { const m = /^(\d{4})-(\d{2})/.exec(d || ''); return m ? m[1] + '年' + (+m[2]) + '月' : '日付なし'; };
 
   // 分類ごとの色相（約45°間隔）。未知の分類は名前から色相を決める
   const HUES = { 'アキバ総研':70, 'bonet':190, 'TOPICS':25, 'Febri TALK':250, 'SERIES':150, 'Febri TV':300,
@@ -134,13 +147,18 @@
   function row(x) {
     const href = x.a || ('https://web.archive.org/web/*/' + x.u);
     const flag = x.a ? '' : '<span class="nosave">未保存</span>';
-    return `<li><span class="date">${fmt(x.d, x.e)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a><span class="cat" style="--h:${hue(x.c)}">${esc(x.c)}</span>${x.w ? `<span class="writer">文／${esc(x.w)}</span>` : ''}${flag}</span></li>`;
+    return `<li><span class="ud">${day(x.d, x.e)}</span><span class="title"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(x.t)}</a><span class="cat" style="--h:${hue(x.c)}">${esc(x.c)}</span>${x.w ? `<span class="writer">文／${esc(x.w)}</span>` : ''}${flag}</span></li>`;
   }
 
+  let lastG = '';
   function render(more) {
-    if (!more) { $('list').innerHTML = ''; shown = 0; }
+    if (!more) { $('list').innerHTML = ''; shown = 0; lastG = ''; }
     const next = results.slice(shown, shown + PAGE);
-    $('list').insertAdjacentHTML('beforeend', next.map(row).join(''));
+    $('list').insertAdjacentHTML('beforeend', next.map(x => {
+      const g = group(x.d), h = g !== lastG ? `<li class="ug">${esc(g)}</li>` : '';
+      lastG = g;
+      return h + row(x);
+    }).join(''));
     shown += next.length;
     $('more').hidden = shown >= results.length;
   }
