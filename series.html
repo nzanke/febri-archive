@@ -102,13 +102,15 @@
 
 <script src="about.js?v=20261117-1" data-page="series"></script>
 <script src="series.js?v=20261110-3"></script>
-<script src="akiba.js?v=20261110-4"></script>
+<script src="akiba.js?v=20261126-1"></script>
 <script src="bonet.js?v=20261115-1"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
+  const akibaAll = (window.AKIBA_DATA || []).concat(window.AKIBA_EXTRA || []);
   const groups = (window.SERIES_DATA || []).map(g => ({ ...g, site: 'Febri' }))
-    .concat(window.AKIBA_SERIES || [], window.BONET_SERIES || []);
+    .concat((window.AKIBA_SERIES || []).map(g => ({ ...g, items: g.ids.map(i => akibaAll[i]) })),  // アキバ総研は記事を番号で指している
+            window.BONET_SERIES || []);
   const sites = [...new Set(groups.map(g => g.site))];
   const esc = s => s.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
   // 日付はアニメ制作決定ニュースと同じ形：月の見出し（画面上端に留める）＋各行は日にちと曜日

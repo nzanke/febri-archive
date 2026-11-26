@@ -22,6 +22,8 @@ SRC = HERE / "articles.json"
 URL = "https://github.com/fushihara/akiba-souken-crawler/releases/download/release-2024-0928-1950/articles.json"
 SEL = HERE / "akiba_selection.json"
 OUT = HERE / "akiba.js"
+TITLES = HERE / "akiba_titles"  # 閲覧ページ用の題名の対応表（番号2000件ごと）
+SHARD = 2000
 JST = datetime.timezone(datetime.timedelta(hours=9))
 # コラム系の連載は連載一覧にだけ出し、記事検索には入れない（インタビュー系の連載は両方に出す）
 COLUMNS = {"アニメコラム", "中年アニメライターの懐かしアニメ回顧録", "中国オタクのアニメ事情", "犬も歩けばアニメに当たる。",
@@ -86,11 +88,33 @@ def main():
         name = "そのほかのアニメコラム" if t == UMBRELLA else t
         series.append({"s": "akiba-" + str(len(series)), "n": name, "site": "アキバ総研", "items": xs})
     series.sort(key=lambda g: (g["n"] == "そのほかのアニメコラム", g["items"][0]["d"]))
-    OUT.write_text(
-        "window.AKIBA_DATA = " + json.dumps(items, ensure_ascii=False, separators=(",", ":")) + ";\n"
-        "window.AKIBA_SERIES = " + json.dumps(series, ensure_ascii=False, separators=(",", ":")) + ";\n",
-        encoding="utf-8")
-    print(f"akiba.js を書き出しました: 記事 {len(items)} 件、連載 {len(series)} 本（{OUT.stat().st_size / 1e6:.1f} MB）")
+    # 記事は1回だけ持つ：記事検索に出す記事（AKIBA_DATA）と、連載一覧にだけ出す記事（AKIBA_EXTRA）。
+    # 連載は記事の位置（AKIBA_DATA と AKIBA_EXTRA をつないだ並びでの番号）で指す
+    pos = {id(x): i for i, x in enumerate(items)}
+    extra = []
+    for g in series:
+        for x in g["items"]:
+            if id(x) not in pos:
+                pos[id(x)] = len(items) + len(extra)
+                extra.append(x)
+    slim = [{"s": g["s"], "n": g["n"], "site": g["site"], "ids": [pos[id(x)] for x in g["items"]]} for g in series]
+    dump = lambda v: json.dumps(v, ensure_ascii=False, separators=(",", ":"))
+    OUT.write_text("window.AKIBA_DATA = " + dump(items) + ";\n"
+                   "window.AKIBA_EXTRA = " + dump(extra) + ";\n"
+                   "window.AKIBA_SERIES = " + dump(slim) + ";\n", encoding="utf-8")
+
+    # 閲覧ページ用：記事番号から題名を引く小さな対応表を、番号2000件ごとのファイルに分ける
+    TITLES.mkdir(exist_ok=True)
+    for f in TITLES.glob("*.json"):
+        f.unlink()
+    shards = {}
+    for x in items + extra:
+        aid = int(x["u"].rstrip("/").split("/")[-1])
+        shards.setdefault(aid // SHARD, {})[aid] = x["t"]
+    for k, v in shards.items():
+        (TITLES / f"{k}.json").write_text(dump(v), encoding="utf-8")
+    print(f"akiba.js を書き出しました: 記事検索 {len(items)} 件、連載だけの記事 {len(extra)} 件、連載 {len(series)} 本（{OUT.stat().st_size / 1e6:.2f} MB）")
+    print(f"akiba_titles/ を書き出しました: {len(shards)} ファイル")
     for g in series:
         print(f"  {g['n']}: {len(g['items'])} 本")
 

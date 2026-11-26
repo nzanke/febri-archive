@@ -47,7 +47,6 @@
 </header>
 <iframe id="frame" sandbox="" referrerpolicy="no-referrer" title="インターネットアーカイブの保存ページ"></iframe>
 
-<script src="akiba.js?v=20261110-4"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -60,10 +59,11 @@
   if (!id) { $('title').textContent = '記事が指定されていません'; return; }
 
   const orig = `https://akiba-souken.com/article/${id}/` + (page > 1 ? `?page=${page}` : '');
-  // 記事名を索引のデータから探す
-  const all = (window.AKIBA_DATA || []).concat(...(window.AKIBA_SERIES || []).map(g => g.items));
-  const hit = all.find(x => x.u === `https://akiba-souken.com/article/${id}/`);
-  if (hit) { $('title').textContent = hit.t; document.title = hit.t + '｜保存ページ'; }
+  // 記事名は、記事番号2000件ごとに分けた小さな対応表から引く（akiba.js 全体は読まない）
+  fetch(`akiba_titles/${Math.floor(+id / 2000)}.json?v=20261126-1`)
+    .then(r => r.ok ? r.json() : {})
+    .then(m => { const t = m[id]; if (t) { $('title').textContent = t; document.title = t + '｜保存ページ'; } })
+    .catch(() => {});
 
   const fmt = s => `${s.slice(0,4)}.${s.slice(4,6)}.${s.slice(6,8)}`;
   function show() {

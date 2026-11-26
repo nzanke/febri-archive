@@ -6,7 +6,7 @@
 - `data.js` … 記事一覧（タイトル・日付・分類・著者・アーカイブURL）
 - `series.html` / `series.js` … 連載一覧
 - `akiba.js` … アキバ総研の記事一覧と連載（`build_akiba.py` で作成）
-- `viewer.html` … アキバ総研の保存ページを、リダイレクトのスクリプトを止めて表示する閲覧ページ
+- `viewer.html` … アキバ総研の保存ページを、リダイレクトのスクリプトを止めて表示する閲覧ページ（題名は `akiba_titles/` の記事番号2000件ごとの対応表から引く）
 - `build_akiba.py` / `akiba_selection.json` … アキバ総研の記事の選び方（元データは fushihara/akiba-souken-crawler の配布ファイル articles.json、CC0）
 - `bonet.js` / `build_bonet.py` … bonet（bonet.info、2013〜2016年ごろの日本語版）のインタビューとコラム。元データは `tools/bonet/`（GitHub Actions でインターネットアーカイブの保存ページから集めたもの）
 - `build_index.py` … 一覧の作成スクリプト
